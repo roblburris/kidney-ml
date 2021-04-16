@@ -1,0 +1,9 @@
+.DS_STORE
+model-src/__pycache__/
+model-src/cache/
+.vscode/
+model-src/.ipynb_checkpoints/
+venv/
+data/
+cache/
+single-cell-kidney-profiling-paper.pdf
