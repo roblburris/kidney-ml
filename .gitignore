@@ -9,3 +9,4 @@ cache/
 single-cell-kidney-profiling-paper.pdf
 Python-3.7.10/
 wandb/
+./model-src/get_data.ipynb
