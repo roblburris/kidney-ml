@@ -2,39 +2,31 @@ import pandas as pd
 import scanpy as sc
 import numpy as np
 import torch
+from anndata import AnnData
 from torch.utils.data import Dataset 
+
+from process_data import *
 
 class KidneyDataset(Dataset):
     '''
     Gets KidneyDataset to be used in NN for kidney cell classification
     '''
-    def __init__(self, path):
+    def __init__(self, adata):
         '''
         pyTorch Dataset Constructor
 
-        :param path: filepath to the directory containing the 10x-Genomics mtx sparse
-        matrix
+        Arguments:
+            adata: adata object
         '''
-        self.adata = self.__get_adata(path)
+        self.adata = AnnData.copy(adata)
         
-    def __get_adata(self, path):
-        '''
-        Helper function that creates a new adata object (see scanpy)
-        
-        :param path: path to the directory containing mtx file
-        '''
-        adata = sc.read(path + 'matrix.mtx', cache=True)
-        adata.obs_names = pd.read_csv(path + 'genes.tsv', header=None, sep='\t')[0]
-        adata.var_names = pd.read_csv(path + 'barcodes.tsv', header=None, sep='\t')[0]
-        return adata
-
     def __len__(self):
         '''
         Gets length of dataset
 
         :return: integer representing length
         '''
-        return self.adata.X.shape[1]
+        return self.adata.X.shape[0]
     
     def __getitem__(self, idx):
         '''
@@ -44,12 +36,30 @@ class KidneyDataset(Dataset):
         :return: a tuple where return[0] is the data and
         return[1] is the label
         '''
-
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        
-        return (self.adata.X[:,idx].toarray(), int(self.adata.var.iloc[idx].name[1]) - 1)
 
+        return (
+            self.adata.X[idx,:].toarray(), 
+            int(self.adata.obs.iloc[idx].name[1]) - 1)
+    
+    def run_feature_selection(self):
+        '''
+        Runs feature selection using scanpy's
+        highly_variable_genes function
+        '''
+        sc.pp.highly_variable_genes(self.adata)
+        self.adata = self.adata[:, adata.var.highly_variable]
+
+    def get_variable_features():
+        '''
+        Returns variable features as picked
+        by scanpy
+        
+        Note: assumes run_feature_selection
+        has already been called
+        '''
+        return self.adata.var.highly_variable
         
         
 
